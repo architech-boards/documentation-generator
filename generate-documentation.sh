@@ -96,7 +96,7 @@ function find_and_replace_in_place_recursive {
     TEMPLATE=$2
     VALUE=$3
 
-    MATCHING_FILES=`find ${DIRECTORY} -iname "*.rst" -exec grep -l "${TEMPLATE}" '{}' \;`
+    MATCHING_FILES=`find ${DIRECTORY} \( -iname "*.rst" -o -iname "*.py" \) -exec grep -l "${TEMPLATE}" '{}' \;`
     for MATCHING_FILE in ${MATCHING_FILES}
     do
         sed -i "s|${TEMPLATE}|${VALUE}|g" ${MATCHING_FILE}
@@ -157,7 +157,6 @@ function replace_manifest_with_keys {
     while read CURRENT_TEMPLATE 
     do
         REPLACE_WITH=`grep ${CURRENT_TEMPLATE} ${KEYS_DIRECTORY}/to_replace.keys | awk -F";" '{print $2}'`
-        echo "Replacing $CURRENT_TEMPLATE with $REPLACE_WITH"
         find_and_replace_in_place_recursive ${FINAL_DIRECTORY} "${CURRENT_TEMPLATE}" "${REPLACE_WITH}"
         fill_title_bars                     ${FINAL_DIRECTORY} "${CURRENT_TEMPLATE}" "${REPLACE_WITH}"
     done < ${MANIFEST_DIRECTORY}/to_replace.manifest
