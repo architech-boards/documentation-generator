@@ -24,15 +24,9 @@ EOF
 
 function clean_hachiko_tiny_directory {
     local TO_CLEAN
-    local TO_DELETE
-    local TO_DELETE_LIST
 
     TO_CLEAN=$1
-    TO_DELETE_LIST=`ls -a ${TO_CLEAN} | grep -v "^.$" | grep -v "^..$" | grep -v "^.git" | grep -v "to_replace\.keys" | grep -v "README\.md"`
-    for TO_DELETE in ${TO_DELETE_LIST}
-    do
-        rm -rf ${TO_CLEAN}/${TO_DELETE}
-    done
+    rm -f  ${TO_CLEAN}/source/*.rst
 }
 
 #######################################################################################################################
@@ -63,4 +57,4 @@ done
 
 clean_hachiko_tiny_directory    ${HACHIKO_TINY_DIRECTORY}
 
-cp -r ${HACHIKO_DIRECTORY}/source ${HACHIKO_TINY_DIRECTORY}
+cp ${HACHIKO_DIRECTORY}/source/*.rst ${HACHIKO_TINY_DIRECTORY}/source
