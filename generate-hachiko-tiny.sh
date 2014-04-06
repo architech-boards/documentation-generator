@@ -1,6 +1,10 @@
 #!/bin/bash
 
+MERGE_DIRECTORY=""
+OUTPUT_DIRECTORY=""
+SCRIPT_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 HACHIKO_DIRECTORY=""
+TEMPLATE_DIRECTORY=""
 HACHIKO_TINY_DIRECTORY=""
 
 #######################################################################################################################
@@ -9,41 +13,51 @@ HACHIKO_TINY_DIRECTORY=""
 function print_usage {
 cat << EOF
 
- This uses the documentation of the Hachiko to generate the
+ This script uses the documentation of the Hachiko board to generate the
  one necessary for Hachiko tiny.
+ It cleans the merge directory, it copies Hachiko documentation there and
+ it overwrites the content of the merge directory with Hachiko tiny
+ documentation.
+ After that, generate-documentation.sh gets called to generate the final
+ result within the output directory.
 
- Usage: $1 [options]
+ Usage: $1 [OPTIONS]
 
  OPTIONS:
  -h                 Print this help and exit
- -o <directory>     Hachiko documentation directory
- -t <directory>     Hachiko tiny documentation directory
+ -b <directory>     Hachiko documentation directory
+ -c <directory>     Hachiko tiny documentation directory
+ -t <directory>     Documentation template directory
+ -m <directory>     Directory where to merge the documentation
+ -o <directory>     Output directory
 
 EOF
-}
-
-function clean_hachiko_tiny_directory {
-    local TO_CLEAN
-
-    TO_CLEAN=$1
-    rm -f  ${TO_CLEAN}/source/*.rst
 }
 
 #######################################################################################################################
 # Options parsing
 
-while getopts "ht:c:o:" option
+while getopts "hb:c:t:m:o:" option
 do
     case ${option} in
         h)
             print_usage $0
             exit 0
             ;;
-        o)
+        b)
             HACHIKO_DIRECTORY=${OPTARG}
             ;;
-        t)
+        c)
             HACHIKO_TINY_DIRECTORY=${OPTARG}
+            ;;
+        t)
+            TEMPLATE_DIRECTORY=${OPTARG}
+            ;;
+        m)
+            MERGE_DIRECTORY=${OPTARG}
+            ;;
+        o)
+            OUTPUT_DIRECTORY=${OPTARG}
             ;;
         ?)
             print_usage $0
@@ -52,9 +66,17 @@ do
     esac
 done
 
+[ -n "${MERGE_DIRECTORY}"  ]        || { echo "ERROR: Give me the merge directory."; print_usage $0; exit 1; }
+[ -n "${OUTPUT_DIRECTORY}"  ]       || { echo "ERROR: Give me the output directory."; print_usage $0; exit 1; }
+[ -n "${TEMPLATE_DIRECTORY}"  ]     || { echo "ERROR: Give me the documentation template directory."; print_usage $0; exit 1; }
 [ -n "${HACHIKO_DIRECTORY}"  ]      || { echo "ERROR: Give me the Hachiko documentation directory."; print_usage $0; exit 1; }
 [ -n "${HACHIKO_TINY_DIRECTORY}"  ] || { echo "ERROR: Give me the Hachiko tiny documentation directory."; print_usage $0; exit 1; }
 
-clean_hachiko_tiny_directory    ${HACHIKO_TINY_DIRECTORY}
+rm -rf   ${MERGE_DIRECTORY}
+mkdir -p ${MERGE_DIRECTORY}
 
-cp ${HACHIKO_DIRECTORY}/source/*.rst ${HACHIKO_TINY_DIRECTORY}/source
+cp -r  ${HACHIKO_DIRECTORY}/*       ${MERGE_DIRECTORY}/
+cp -r  ${HACHIKO_TINY_DIRECTORY}/*  ${MERGE_DIRECTORY}/
+rm -rf ${MERGE_DIRECTORY}/.git
+
+${SCRIPT_DIRECTORY}/generate-documentation.sh -t ${TEMPLATE_DIRECTORY} -c ${MERGE_DIRECTORY} -o ${OUTPUT_DIRECTORY}
