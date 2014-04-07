@@ -105,10 +105,13 @@ function find_and_replace_in_place_recursive {
 
 function get_string_filled_with_char {
     local CHARACTER
+    local CHARACTER_SIZE
     local SIZE
     local STRING
     SIZE=$1
     CHARACTER=$2
+    CHARACTER_SIZE=${#CHARACTER}
+    SIZE=$(( $SIZE * $CHARACTER_SIZE  ))
     STRING=""
     while [[ ${#STRING} -lt ${SIZE} ]]
     do
@@ -135,7 +138,7 @@ function fill_title_bars {
     TEMPLATE=${TEMPLATE:1:${TEMPLATE_SIZE}-2}
     VALUE_SIZE=${#VALUE}
     
-    CHARACTERS_LIST="= - ^"
+    CHARACTERS_LIST="= - ^ \* # \""
     for CHARACTER in ${CHARACTERS_LIST}
     do
         REPLACE_WITH=$(get_string_filled_with_char ${VALUE_SIZE} ${CHARACTER})
