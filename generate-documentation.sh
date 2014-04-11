@@ -174,6 +174,7 @@ function replace_manifest_with_keys {
     FINAL_DIRECTORY=$3
     while read CURRENT_TEMPLATE 
     do
+        echo "  ${CURRENT_TEMPLATE}"
         REPLACE_WITH=`grep ${CURRENT_TEMPLATE} ${KEYS_DIRECTORY}/to_replace.keys | awk -F";" '{print $2}'`
         find_and_replace_in_place_recursive ${FINAL_DIRECTORY} "${CURRENT_TEMPLATE}" "${REPLACE_WITH}"
         fill_title_bars                     ${FINAL_DIRECTORY} "${CURRENT_TEMPLATE}" "${REPLACE_WITH}"
