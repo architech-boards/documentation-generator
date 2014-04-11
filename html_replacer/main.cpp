@@ -268,17 +268,19 @@ void print_usage( string program_name )
     cout << " Usage: " << program_name << " [OPTIONS]" << endl;
     cout << endl;
     cout << " OPTIONS:" << endl;
-    cout << "   -h  --help                  Display this help and exit." << endl;
-    cout << "   -f  --filepath              Input file filepath." << endl;
-    cout << "   -a  --admonition-name       The name of the admonition to replace." << endl;
-    cout << "   -t  --title                 The title to display when replacing." << endl;
-    cout << "   -u  --differentiator        A string to help this program uniquely identify an HTML element" << endl;
-    cout << "                               inside the final page." << endl;
-    cout << "   -d  --debug-level           The level of debug you want to enable:" << endl;
-    cout << "                                   0 displays just errors," << endl;
-    cout << "                                   1 displays errors and warnings," << endl;
-    cout << "                                   2 display all the debug prints." << endl;
-    cout << "                               This parameter is optional." << endl;
+    cout << "   -h  --help                          Display this help and exit." << endl;
+    cout << "   -f  --filepath <filepath>           Input file filepath." << endl;
+    cout << "   -a  --admonition-name <name>        The name of the admonition to replace (e.g. host)." << endl;
+    cout << "   -t  --title <box title>             The box title to display inside in the final HTML page" << endl;
+    cout << "                                       (e.g. Host)." << endl;
+    cout << "   -u  --differentiator <unique-label> A string to help this program uniquely identify an HTML" << endl;
+    cout << "                                       element inside the final page." << endl;
+    cout << "   -d  --debug-level <level>           The level of debug you want to enable:" << endl;
+    cout << "                                           0 display just errors," << endl;
+    cout << "                                           1 display errors and warnings," << endl;
+    cout << "                                           2 display all the debug prints and suppress the normal" << endl;
+    cout << "                                             out." << endl;
+    cout << "                                       This parameter is optional." << endl;
 }
 
 bool
