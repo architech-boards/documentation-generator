@@ -6,6 +6,7 @@ SCRIPT_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 HACHIKO_DIRECTORY=""
 TEMPLATE_DIRECTORY=""
 HACHIKO_TINY_DIRECTORY=""
+STAGE_MODIFICATIONS="no"
 
 #######################################################################################################################
 # Helpers
@@ -30,6 +31,7 @@ cat << EOF
  -t <directory>     Documentation template directory
  -m <directory>     Directory where to merge the documentation
  -o <directory>     Output directory
+ -s                 Stage modifications for commit. Not mandatory
 
 EOF
 }
@@ -37,7 +39,7 @@ EOF
 #######################################################################################################################
 # Options parsing
 
-while getopts "hb:c:t:m:o:" option
+while getopts "hb:c:t:m:o:s" option
 do
     case ${option} in
         h)
@@ -59,6 +61,9 @@ do
         o)
             OUTPUT_DIRECTORY=${OPTARG}
             ;;
+        s)
+            STAGE_MODIFICATIONS="yes"
+            ;;
         ?)
             print_usage $0
             exit 1
@@ -72,6 +77,13 @@ done
 [ -n "${HACHIKO_DIRECTORY}"  ]      || { echo "ERROR: Give me the Hachiko documentation directory."; print_usage $0; exit 1; }
 [ -n "${HACHIKO_TINY_DIRECTORY}"  ] || { echo "ERROR: Give me the Hachiko tiny documentation directory."; print_usage $0; exit 1; }
 
+if [ "${STAGE_MODIFICATIONS}" == "yes" ]
+then
+    STAGE_MODIFICATIONS="-s"
+else
+    STAGE_MODIFICATIONS=""
+fi
+
 rm -rf   ${MERGE_DIRECTORY}
 mkdir -p ${MERGE_DIRECTORY}
 
@@ -79,4 +91,4 @@ cp -r  ${HACHIKO_DIRECTORY}/*       ${MERGE_DIRECTORY}/
 cp -r  ${HACHIKO_TINY_DIRECTORY}/*  ${MERGE_DIRECTORY}/
 rm -rf ${MERGE_DIRECTORY}/.git
 
-${SCRIPT_DIRECTORY}/generate-documentation.sh -t ${TEMPLATE_DIRECTORY} -c ${MERGE_DIRECTORY} -o ${OUTPUT_DIRECTORY}
+${SCRIPT_DIRECTORY}/generate-documentation.sh -t ${TEMPLATE_DIRECTORY} -c ${MERGE_DIRECTORY} -o ${OUTPUT_DIRECTORY} ${STAGE_MODIFICATIONS}

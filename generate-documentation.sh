@@ -12,6 +12,8 @@ CSS_DIRECTORY="${SCRIPT_DIRECTORY}/css"
 JS_DIRECTORY="${SCRIPT_DIRECTORY}/js"
 MAIN_CSS="source/_themes/architech/static/architech.css"
 JS_OUTPUT="source/_static/"
+CHECK_IMAGES_PATH="${SCRIPT_DIRECTORY}/check-images.sh"
+STAGE_MODIFICATIONS="no"
 
 #######################################################################################################################
 # Helpers
@@ -29,6 +31,7 @@ cat << EOF
  -t <directory>     Documentation template directory
  -c <directory>     Documentation customizations directory
  -o <directory>     Where to place the output.
+ -s                 Stage modifications for commit. Not mandatory
 
 EOF
 }
@@ -270,10 +273,70 @@ function customize_html {
     replace_code_snippets ${DESTINATION} ${REPLACER}
 }
 
+function remove_unreferenced_images {
+    local CHECK_IMAGES
+    local TMP_FILE
+    local DOCUMENTATION_DIRECTORY
+
+    CHECK_IMAGES=$1
+    DOCUMENTATION_DIRECTORY=$2
+
+    TMP_FILE=`mktemp`
+    ${CHECK_IMAGES} -d ${DOCUMENTATION_DIRECTORY} -r | awk -F" " '{print $3}' > ${TMP_FILE}
+
+    while read CURRENT_IMAGE
+    do
+        echo "  Deleting ${DOCUMENTATION_DIRECTORY}/${CURRENT_IMAGE}..."
+        rm -f ${DOCUMENTATION_DIRECTORY}/${CURRENT_IMAGE}
+    done < ${TMP_FILE}
+
+    rm -f ${TMP_FILE}    
+}
+
+function stage_modifications {
+    local TMP_FILE
+    local CURRENT_FILE
+    local DOCUMENTATION_DIRECTORY
+    DOCUMENTATION_DIRECTORY=$1
+
+    cd ${DOCUMENTATION_DIRECTORY}
+    git status > /dev/null 2>&1
+    if [ $? -ne 0 ]
+    then
+        echo "  The output directory is not a git repository."
+        return
+    fi
+    
+    TMP_FILE=`mktemp`
+
+    git status --porcelain | grep "^ M" | awk -F" " '{print $2}' > ${TMP_FILE}
+    while read CURRENT_FILE
+    do
+        echo "  Adding modified file ${CURRENT_FILE}..."
+        git add ${CURRENT_FILE}
+    done < ${TMP_FILE}
+
+    git status --porcelain | grep "^ D" | awk -F" " '{print $2}' > ${TMP_FILE}
+    while read CURRENT_FILE
+    do
+        echo "  Removing file ${CURRENT_FILE}..."
+        git rm -f ${CURRENT_FILE} > /dev/null 2>&1
+    done < ${TMP_FILE}
+
+    git status --porcelain | grep "^??" | awk -F" " '{print $2}' > ${TMP_FILE}
+    while read CURRENT_FILE
+    do
+        echo "  Adding new file ${CURRENT_FILE}..."
+        git add ${CURRENT_FILE}
+    done < ${TMP_FILE}
+
+    rm ${TMP_FILE}
+}
+
 #######################################################################################################################
 # Options parsing
 
-while getopts "ht:c:o:" option
+while getopts "ht:c:o:s" option
 do
     case ${option} in
         h)
@@ -288,6 +351,9 @@ do
             ;;
         o)
             OUTPUT_DIRECTORY=${OPTARG}
+            ;;
+        s)
+            STAGE_MODIFICATIONS="yes"
             ;;
         ?)
             print_usage $0
@@ -348,6 +414,15 @@ replace_manifest_with_keys ${TEMPLATE_DIRECTORY} ${CUSTOMIZATIONS_DIRECTORY} ${O
 
 echo " Integrating HTML customizations..."
 customize_html ${CSS_DIRECTORY} ${MAIN_CSS} ${JS_DIRECTORY} ${JS_OUTPUT} ${OUTPUT_DIRECTORY} ${SCRIPT_DIRECTORY}/html_replacer/replacer
+
+echo " Removing unreferenced images..."
+remove_unreferenced_images ${CHECK_IMAGES_PATH} ${OUTPUT_DIRECTORY}
+
+if [ "${STAGE_MODIFICATIONS}" == "yes" ]
+then
+    echo " Staging modifications for commit..."
+    stage_modifications ${OUTPUT_DIRECTORY}
+fi
 
 echo " Done!"
 
