@@ -55,7 +55,7 @@ function copy_git_directory {
     local CURRENT_EXCLUDE
     local EXCLUDE_LIST
     local OPTIONS
-    EXCLUDE_LIST="build *.manifest *.keys .git* *.append *.prepend *.rst.tmp"
+    EXCLUDE_LIST="build *.manifest *.keys .git* *.append *.prepend *.rst.tmp *.swp"
 
     SOURCE=$1
     DESTINATION=$2
