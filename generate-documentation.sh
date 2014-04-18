@@ -55,7 +55,7 @@ function copy_git_directory {
     local CURRENT_EXCLUDE
     local EXCLUDE_LIST
     local OPTIONS
-    EXCLUDE_LIST="build *.manifest *.keys .git* *.append *.prepend *.rst.tmp *.swp"
+    EXCLUDE_LIST="build *.manifest *.keys .git* *.append *.prepend *.rst.tmp *.swp README TODO"
 
     SOURCE=$1
     DESTINATION=$2
@@ -398,7 +398,6 @@ clean_git_directory ${OUTPUT_DIRECTORY}
 
 echo " Copying template..."
 copy_git_directory  ${TEMPLATE_DIRECTORY}       ${OUTPUT_DIRECTORY}
-rm -f ${OUTPUT_DIRECTORY}/README
 
 echo " Copying customizations..."
 copy_git_directory  ${CUSTOMIZATIONS_DIRECTORY} ${OUTPUT_DIRECTORY}
